@@ -1,0 +1,25 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# Spring Boot target folders
+target/
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE specific files (VS Code / IntelliJ)
+.vscode/
+.idea/
+*.iml
+.settings/
+.classpath
+.project
