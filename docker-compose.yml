@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # 1. Order Service (Backend)
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service-app
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://order-mongodb-container:27017/bookstore_db
+    depends_on:
+      - order-mongodb
+    restart: always
+
+  # 2. Order Database
+  order-mongodb:
+    image: mongo:latest
+    container_name: order-mongodb-container
+    ports:
+      - "27017:27017"
+
+  # 3. Swagger UI Container (Port 8085)
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-ui-app
+    ports:
+      - "8085:8080"
+    environment:
+      - SWAGGER_JSON=/openapi.yaml
+    volumes:
+      - ./docs/openapi.yaml:/openapi.yaml
+    depends_on:
+      - order-service
+    restart: always

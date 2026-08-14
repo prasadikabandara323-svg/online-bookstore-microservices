@@ -1,0 +1,274 @@
+openapi: 3.0.1
+info:
+  title: OrderService
+  version: v0
+servers:
+  - url: http://localhost:8083
+    description: Generated server url
+paths:
+  /api/orders/{id}:
+    get:
+      tags:
+        - order-controller
+      operationId: getOrderById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Order"
+    put:
+      tags:
+        - order-controller
+      operationId: updateOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Order"
+    delete:
+      tags:
+        - order-controller
+      operationId: deleteOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+  /api/cart/update:
+    put:
+      tags:
+        - cart-controller
+      operationId: updateCart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  /api/orders:
+    get:
+      tags:
+        - order-controller
+      operationId: getAllOrders
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      tags:
+        - order-controller
+      operationId: createOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Order"
+  /api/orders/process:
+    post:
+      tags:
+        - order-controller
+      operationId: processOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+  /api/cart/add:
+    post:
+      tags:
+        - cart-controller
+      operationId: addToCart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  /api/orders/user/{userId}:
+    get:
+      tags:
+        - order-controller
+      operationId: getOrdersByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+  /api/orders/test:
+    get:
+      tags:
+        - order-controller
+      operationId: testEndpoint
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+  /api/cart/{userId}:
+    get:
+      tags:
+        - cart-controller
+      operationId: getCartByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  /api/cart/remove:
+    delete:
+      tags:
+        - cart-controller
+      operationId: removeFromCart
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: bookId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  /api/cart/clear/{userId}:
+    delete:
+      tags:
+        - cart-controller
+      operationId: clearCart
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+components:
+  schemas:
+    Order:
+      required:
+        - totalAmount
+        - userId
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: integer
+          format: int64
+        totalAmount:
+          type: number
+          format: double
+        status:
+          type: string
+        apiKeyValid:
+          type: boolean
+        orderDate:
+          type: string
+          format: date-time
