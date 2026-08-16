@@ -1,6 +1,10 @@
 version: "3.8"
 
 services:
+version: '3.8'
+
+services:
+  # 1. Central MongoDB Database for the Microservices
   mongo:
     image: mongo:7
     container_name: bookstore-mongo
@@ -19,6 +23,61 @@ services:
       API_SECURITY_KEY: YOUR_SECRET_API_KEY_HERE
     depends_on:
       - mongo
+    restart: always
+
+  # 2. Book Catalog Service (Prasadika's Microservice)
+  book-catalog-service:
+    build:
+      context: ./book-catalog-service
+    container_name: book-catalog-service
+    ports:
+      - "8082:8082"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/bookstore_db
+      - API_KEY=YOUR_SECRET_API_KEY_HERE
+    depends_on:
+      - mongo
+    restart: always
+
+  # 3. Book Catalog Swagger UI Documentation
+  book-catalog-docs:
+    image: swaggerapi/swagger-ui
+    container_name: book-catalog-swagger
+    ports:
+      - "9090:8080"
+    environment:
+      - SWAGGER_JSON=/docs/openapi.yaml
+    volumes:
+      - ./book-catalog-service/docs:/docs
+    depends_on:
+      - book-catalog-service
+    restart: always
+
+  # 4. Order Service (Backend)
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service-app
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/bookstore_db
+    depends_on:
+      - mongo
+    restart: always
+
+  # 5. Client App (Unified Frontend)
+  client-app:
+    build:
+      context: ./client-app
+    container_name: bookstore-client
+    ports:
+      - "8080:80"
+    depends_on:
+      - book-catalog-service
+      - order-service
+    restart: always
 
 volumes:
   mongo-data:

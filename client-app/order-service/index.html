@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <link rel="icon" href="data:,">
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Shopping Cart</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+
+
+    <div id="toastContainer" class="toast-container"></div>
+
+
+
+    <div class="container">
+
+        <!-- Header -->
+
+        <header class="header">
+
+            <h1>🛒 My Shopping Cart</h1>
+
+            <div style="display: flex; gap: 10px;">
+
+                <a href="index.html" class="nav-link">📚 Shop Books</a>
+
+                <a href="orders.html" class="nav-link">📦 My Orders</a>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- Cart Table Card -->
+
+        <div class="card">
+
+            <table class="cart-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Book Title</th>
+
+                        <th>Price</th>
+
+                        <th>Quantity</th>
+
+                        <th>Subtotal</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="cartTableBody">
+
+                    <!-- JS Rows -->
+
+                </tbody>
+
+            </table>
+
+            <div id="emptyCartMsg" class="empty-msg hidden">Your cart is empty! 🛒</div>
+
+        </div>
+
+
+
+        <!-- Summary & Checkout Section -->
+
+        <div class="card summary-card">
+
+            <div>
+
+                <h3>Cart Summary</h3>
+
+            </div>
+
+            <div>
+
+                <span class="total-price">Total: <span id="totalAmount">LKR 0.00</span></span>
+
+            </div>
+
+            <button id="checkoutBtn" onclick="goToCheckout()" class="btn-primary">Proceed to Checkout ➡️</button>
+
+        </div>
+
+    </div>
+
+
+
+    <script src="cart.js"></script>
+
+</body>
+
+</html> 
+

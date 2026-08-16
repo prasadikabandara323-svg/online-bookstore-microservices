@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders & Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📦 Order Management</h1>
+            <a href="index.html" class="nav-link">🛒 Back to Cart</a>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('user')">👤 My Orders (User)</button>
+            <button class="tab-btn" onclick="switchTab('admin')">👑 All Orders (Admin Dashboard)</button>
+        </div>
+
+        <!-- USER ORDERS VIEW -->
+        <div id="userOrdersTab" class="card tab-content">
+            <h3>Your Recent Orders</h3>
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="userOrdersTableBody"></tbody>
+            </table>
+            <div id="noUserOrders" class="empty-msg hidden">No orders found! 📦</div>
+        </div>
+
+        <!-- ADMIN ORDERS MANAGEMENT VIEW -->
+        <div id="adminOrdersTab" class="card tab-content hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>Manage All Customer Orders</h3>
+                <!-- Filter Dropdown -->
+                <select id="statusFilter" onchange="filterAdminOrders()" class="status-select">
+                    <option value="ALL">All Statuses</option>
+                    <option value="PENDING">PENDING Only</option>
+                    <option value="COMPLETED">COMPLETED Only</option>
+                    <option value="CANCELLED">CANCELLED Only</option>
+                </select>
+            </div>
+            
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User ID</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Update Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="adminOrdersTableBody"></tbody>
+            </table>
+            <div id="noAdminOrders" class="empty-msg hidden">No orders available in system.</div>
+        </div>
+    </div>
+
+    <script src="orders.js"></script>
+</body>
+</html>
