@@ -1,7 +1,45 @@
 version: '3.8'
 
 services:
-  # 1. Order Service (Backend)
+  # 1. Central MongoDB Database for the Microservices
+  mongo:
+    image: mongo:7
+    container_name: bookstore-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  # 2. Book Catalog Service (Prasadika's Microservice)
+  book-catalog-service:
+    build:
+      context: ./book-catalog-service
+    container_name: book-catalog-service
+    ports:
+      - "8082:8082"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/bookstore_db
+      - API_KEY=YOUR_SECRET_API_KEY_HERE
+    depends_on:
+      - mongo
+    restart: always
+
+  # 3. Book Catalog Swagger UI Documentation
+  book-catalog-docs:
+    image: swaggerapi/swagger-ui
+    container_name: book-catalog-swagger
+    ports:
+      - "9090:8080"
+    environment:
+      - SWAGGER_JSON=/docs/openapi.yaml
+    volumes:
+      - ./book-catalog-service/docs:/docs
+    depends_on:
+      - book-catalog-service
+    restart: always
+
+  # 4. Order Service (Backend)
   order-service:
     build:
       context: ./order-service
@@ -10,28 +48,22 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://order-mongodb-container:27017/bookstore_db
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/bookstore_db
     depends_on:
-      - order-mongodb
+      - mongo
     restart: always
 
-  # 2. Order Database
-  order-mongodb:
-    image: mongo:latest
-    container_name: order-mongodb-container
+  # 5. Client App (Unified Frontend)
+  client-app:
+    build:
+      context: ./client-app
+    container_name: bookstore-client
     ports:
-      - "27017:27017"
-
-  # 3. Swagger UI Container (Port 8085)
-  swagger-ui:
-    image: swaggerapi/swagger-ui
-    container_name: swagger-ui-app
-    ports:
-      - "8085:8080"
-    environment:
-      - SWAGGER_JSON=/openapi.yaml
-    volumes:
-      - ./docs/openapi.yaml:/openapi.yaml
+      - "8080:80"
     depends_on:
+      - book-catalog-service
       - order-service
     restart: always
+
+volumes:
+  mongo-data:

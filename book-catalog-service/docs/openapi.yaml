@@ -1,0 +1,208 @@
+openapi: 3.0.0
+info:
+  title: Book Catalog API
+  version: 1.0.0
+  description: API Documentation for Book Catalog Service
+
+servers:
+  - url: http://localhost:8082
+    description: Local Development Server (Spring Boot Backend)
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /books:
+    get:
+      summary: Get all books or filter by category and search
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of books matching the criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      summary: Add a new book (Admin View)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookInput'
+      responses:
+        '201':
+          description: Book created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '401':
+          description: Unauthorized - missing or invalid API key
+
+  /books/{id}:
+    get:
+      summary: Get book by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Book details found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Book not found
+    put:
+      summary: Update an existing book (Admin View)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookInput'
+      responses:
+        '200':
+          description: Book updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Book not found
+    delete:
+      summary: Delete a book (Admin View)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Book deleted successfully
+        '404':
+          description: Book not found
+
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the book
+          example: "65f1c2a4e4b0a1b2c3d4e5f6"
+        title:
+          type: string
+          description: Title of the book
+          example: "1984"
+        author:
+          type: string
+          description: Author of the book
+          example: "George Orwell"
+        isbn:
+          type: string
+          description: ISBN number
+          example: "9780451524935"
+        price:
+          type: number
+          format: double
+          description: Price of the book
+          example: 12.99
+        category:
+          type: string
+          description: Category/Genre of the book
+          example: "Fiction"
+        stockQuantity:
+          type: integer
+          description: Available stock quantity
+          example: 25
+        imageUrl:
+          type: string
+          description: Cover image URL
+          example: "/bookcatelogimages/1984.jpg"
+        language:
+          type: string
+          description: Language of the book
+          example: "English"
+        publisher:
+          type: string
+          description: Publisher name
+          example: "Secker & Warburg"
+        isbn13:
+          type: string
+          description: ISBN-13 format number
+          example: "978-0451524935"
+        description:
+          type: string
+          description: Detailed description of the book
+          example: "A dystopian social science fiction novel."
+
+    BookInput:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "1984"
+        author:
+          type: string
+          example: "George Orwell"
+        isbn:
+          type: string
+          example: "9780451524935"
+        price:
+          type: number
+          format: double
+          example: 12.99
+        category:
+          type: string
+          example: "Fiction"
+        stockQuantity:
+          type: integer
+          example: 25
+        imageUrl:
+          type: string
+          example: "/bookcatelogimages/1984.jpg"
+        language:
+          type: string
+          example: "English"
+        publisher:
+          type: string
+          example: "Secker & Warburg"
+        isbn13:
+          type: string
+          example: "978-0451524935"
+        description:
+          type: string
+          example: "A dystopian social science fiction novel."
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
