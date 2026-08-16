@@ -1,0 +1,12 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: payment-service
+
+# API Security Key Config
+api:
+  security:
+    key: YOUR_SECRET_API_KEY_HERE
+    
