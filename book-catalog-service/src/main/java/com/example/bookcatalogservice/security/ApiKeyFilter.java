@@ -29,9 +29,9 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 2.  Bypassing the filter for direct browser requests to frontend assets (index.html, logo, images).
-        if (path.equals("/") || 
-            path.equals("/index.html") || 
+        // 2. Bypassing the filter only for static frontend assets (images, favicon) -
+        // the root path ("/") now also requires the API key.
+        if (path.equals("/index.html") || 
             path.startsWith("/bookcatelogimages/") || 
             path.equals("/favicon.ico")) {
             
