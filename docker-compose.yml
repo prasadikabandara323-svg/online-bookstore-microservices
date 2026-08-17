@@ -39,7 +39,7 @@ services:
       - book-catalog-service
     restart: always
 
-  # 4. Order Service (Backend)
+  # 4. Order Service (Hasini's Backend Microservice)
   order-service:
     build:
       context: ./order-service
@@ -53,17 +53,30 @@ services:
       - mongo
     restart: always
 
-  # 5. Client App (Unified Frontend)
-  client-app:
-    build:
-      context: ./client-app
-    container_name: bookstore-client
+  # 5. Order Service Swagger UI Documentation
+  order-service-docs:
+    image: swaggerapi/swagger-ui
+    container_name: order-service-swagg
     ports:
-      - "8080:80"
+      - "8085:8080"
+    environment:
+      - SWAGGER_JSON_URL=http://localhost:8083/v3/api-docs
     depends_on:
-      - book-catalog-service
       - order-service
     restart: always
 
+  # 6. Client App (Frontend UI)
+  # 6. Order Service Frontend UI (Hasini's Client App)
+  # 6. Order Service Frontend UI
+  client-app:
+    build:
+      context: ./client-app/order-service
+    container_name: bookstore-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - order-service
+    restart: always
+    
 volumes:
   mongo-data:
