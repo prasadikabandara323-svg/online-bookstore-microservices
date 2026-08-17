@@ -11,7 +11,7 @@ services:
       - mongo-data:/data/db
     restart: always
 
-  # 2. Book Catalog Service (Prasadika's Microservice)
+  # 2. Book Catalog Service 
   book-catalog-service:
     build:
       context: ./book-catalog-service
