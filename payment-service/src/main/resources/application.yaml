@@ -4,9 +4,10 @@ server:
 spring:
   application:
     name: payment-service
+  mongodb:
+    uri: mongodb://mongo:27017/bookstore_db
 
 # API Security Key Config
 api:
   security:
     key: YOUR_SECRET_API_KEY_HERE
-    

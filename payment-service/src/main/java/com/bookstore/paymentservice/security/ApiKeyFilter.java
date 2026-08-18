@@ -1,4 +1,4 @@
-package com.bookstore.paymentservice.security; // ඔයාගේ package name එකට ගැලපෙන සේ වෙනස් කරන්න
+package com.bookstore.paymentservice.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,41 +17,26 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     private String expectedApiKey;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                    HttpServletResponse response, 
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1. Browser එකෙන් එන CORS Preflight (OPTIONS) requests Bypass කිරීම
+        // CORS Preflight (OPTIONS) requests වලට පමණක් bypass වීමට ඉඩ දෙයි
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2. Static HTML, CSS, JS, Images සහ Root URL (/) සඳහා API Key Security Bypass කිරීම
-        String path = request.getRequestURI();
-        if (path.equals("/") || 
-            path.endsWith(".html") || 
-            path.endsWith(".css") || 
-            path.endsWith(".js") || 
-            path.endsWith(".png") || 
-            path.endsWith(".jpg") || 
-            path.endsWith(".ico")) {
-            
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // 3. Header එකෙන් X-API-KEY එක ලබා ගැනීම (API Endpoints සඳහා පමණයි)
+        // Header එකෙන් X-API-KEY එක ලබා ගනී
         String apiKeyHeader = request.getHeader("X-API-KEY");
 
-        // Key එක නිවැරදිදැයි පරීක්ෂා කිරීම
         if (expectedApiKey.equals(apiKeyHeader)) {
-            filterChain.doFilter(request, response); // Key එක හරි නම් request එක ඉදිරියට යවනවා
+            filterChain.doFilter(request, response);
         } else {
-            // Key එක වැරදි නම් 401 Unauthorized Error එකක් යවනවා
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Unauthorized: Invalid or Missing API Key");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Unauthorized: Invalid or missing API Key\"}");
         }
     }
 }
