@@ -25,7 +25,6 @@ services:
       - mongo
     restart: always
 
-  # 2. Book Catalog Service (Prasadika's Microservice)
   # Payment Service Swagger UI Documentation
   payment-service-docs:
     image: swaggerapi/swagger-ui
@@ -65,7 +64,7 @@ services:
       - mongo
     restart: always
 
-  # 4. Book Catalog Swagger UI Documentation
+  # Book Catalog Swagger UI Documentation
   book-catalog-docs:
     image: swaggerapi/swagger-ui
     container_name: book-catalog-swagger
@@ -79,8 +78,7 @@ services:
       - book-catalog-service
     restart: always
 
-  # 4. Order Service (Backend)
-  # 5. Book Catalog Frontend UI
+  # Book Catalog Frontend UI
   book-catalog-client:
     build:
       context: ./client-app
@@ -92,7 +90,7 @@ services:
       - order-service
     restart: always
 
-  # 6. Order Service (Backend Microservice)
+  # 4. Order Service (Backend Microservice)
   order-service:
     build:
       context: ./order-service
@@ -106,9 +104,7 @@ services:
       - mongo
     restart: always
 
-  # 5. Client App (Unified Frontend)
-  client-app:
-  # 7. Order Service Swagger UI Documentation
+  # Order Service Swagger UI Documentation
   order-service-docs:
     image: swaggerapi/swagger-ui
     container_name: order-service-swagg
@@ -120,15 +116,14 @@ services:
       - order-service
     restart: always
 
-  # 8. Order Service Frontend UI
+  # Order Service Frontend UI
   order-service-client:
     build:
-      context: ./client-app
+      context: ./client-app/order-service
     container_name: bookstore-client
     ports:
-      - "8080:80"
+      - "3000:80"
     depends_on:
-      - book-catalog-service
       - order-service
     restart: always
 
