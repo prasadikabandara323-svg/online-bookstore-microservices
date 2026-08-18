@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: user-auth-service
+  mongodb:
+    uri: mongodb://${MONGO_HOST:localhost}:27017/bookstore_auth_db
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:ayodhyaranathunge@gmail.com}
+    password: ${MAIL_PASSWORD:sgte ybwi wqiw fwzx}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: 8081
+
+jwt:
+  secret: ${JWT_SECRET:bookstore-super-secret-key-change-this-in-production-min-256-bits-long}
+  expiration: 86400000
+
+api:
+  key: ${API_KEY:YOUR_SECRET_API_KEY_HERE}

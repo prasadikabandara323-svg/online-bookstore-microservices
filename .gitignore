@@ -12,9 +12,7 @@ hs_err_pid*
 
 # Spring Boot target folders
 target/
-.mvn/
-mvnw
-mvnw.cmd
+.mvn/wrapper/maven-wrapper.jar
 
 # IDE specific files (VS Code / IntelliJ)
 .vscode/

@@ -1,0 +1,74 @@
+services:
+
+  # ---- Database ----
+  mongodb:
+    image: mongo:7
+    container_name: bookstore-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - bookstore-net
+
+  # ---- Auth Microservice ----
+  user-auth-service:
+    build: ./user-auth-service
+    container_name: user-auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      MONGO_HOST: mongodb
+      JWT_SECRET: bookstore-super-secret-key-change-this-in-production-min-256-bits-long
+      API_KEY: YOUR_SECRET_API_KEY_HERE
+      MAIL_USERNAME: ayodhyaranathunge@gmail.com
+      MAIL_PASSWORD: sgte ybwi wqiw fwzx
+    depends_on:
+      - mongodb
+    networks:
+      - bookstore-net
+
+  # ---- API Gateway ----
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      AUTH_SERVICE_HOST: user-auth-service
+      JWT_SECRET: bookstore-super-secret-key-change-this-in-production-min-256-bits-long
+    depends_on:
+      - user-auth-service
+    networks:
+      - bookstore-net
+
+  # ---- Client App (static frontend, served by nginx) ----
+  client-app:
+    build: ./client-app
+    container_name: client-app
+    ports:
+      - "3001:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - bookstore-net
+
+  # ---- Swagger UI (API documentation) ----
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-docs
+    ports:
+      - "9090:8080"
+    environment:
+      SWAGGER_JSON: /docs/openapi.yaml
+    volumes:
+      - ./docs:/docs
+    networks:
+      - bookstore-net
+
+networks:
+  bookstore-net:
+    driver: bridge
+
+volumes:
+  mongo-data:
