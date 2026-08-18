@@ -1,3 +1,6 @@
+version: "3.8"
+
+services:
 version: '3.8'
 
 services:
@@ -9,6 +12,17 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_MONGODB_URI: mongodb://mongo:27017/paymentdb
+      API_SECURITY_KEY: YOUR_SECRET_API_KEY_HERE
+    depends_on:
+      - mongo
     restart: always
 
   # 2. Book Catalog Service 
