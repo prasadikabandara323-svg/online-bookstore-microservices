@@ -1,48 +1,192 @@
-services:
+version: '3.8'
 
-  # ---- Database ----
-  mongodb:
+services:
+  # ==========================================
+  # 1. Central MongoDB Database
+  # ==========================================
+  mongo:
     image: mongo:7
-    container_name: bookstore-mongodb
+    container_name: bookstore-mongo
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
     networks:
       - bookstore-net
+    restart: always
 
-  # ---- Auth Microservice ----
+  # ==========================================
+  # 2. Auth Service & API Gateway
+  # ==========================================
   user-auth-service:
     build: ./user-auth-service
     container_name: user-auth-service
     ports:
       - "8081:8081"
     environment:
-      MONGO_HOST: mongodb
-      JWT_SECRET: bookstore-super-secret-key-change-this-in-production-min-256-bits-long
-      API_KEY: YOUR_SECRET_API_KEY_HERE
-      MAIL_USERNAME: ayodhyaranathunge@gmail.com
-      MAIL_PASSWORD: sgte ybwi wqiw fwzx
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/bookstore_db
+      - MONGO_HOST=mongo
+      - JWT_SECRET=bookstore-super-secret-key-change-this-in-production-min-256-bits-long
+      - API_KEY=YOUR_SECRET_API_KEY_HERE
+      - MAIL_USERNAME=ayodhyaranathunge@gmail.com
+      - MAIL_PASSWORD=sgte ybwi wqiw fwzx
     depends_on:
-      - mongodb
+      - mongo
     networks:
       - bookstore-net
+    restart: always
 
-  # ---- API Gateway ----
   api-gateway:
     build: ./api-gateway
     container_name: api-gateway
     ports:
       - "8080:8080"
     environment:
-      AUTH_SERVICE_HOST: user-auth-service
-      JWT_SECRET: bookstore-super-secret-key-change-this-in-production-min-256-bits-long
+      - AUTH_SERVICE_HOST=user-auth-service
+      - JWT_SECRET=bookstore-super-secret-key-change-this-in-production-min-256-bits-long
     depends_on:
       - user-auth-service
     networks:
       - bookstore-net
+    restart: always
 
-  # ---- Client App (static frontend, served by nginx) ----
+  # ==========================================
+  # 3. Payment Service, Docs & Client
+  # ==========================================
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/bookstore_db
+      - SPRING_MONGODB_URI=mongodb://mongo:27017/bookstore_db
+      - API_SECURITY_KEY=YOUR_SECRET_API_KEY_HERE
+    depends_on:
+      - mongo
+    networks:
+      - bookstore-net
+    restart: always
+
+  payment-service-docs:
+    image: swaggerapi/swagger-ui
+    container_name: payment-service-swagger
+    ports:
+      - "8088:8080"
+    environment:
+      - SWAGGER_JSON=/docs/openapi.yaml
+    volumes:
+      - ./payment-service/docs:/docs
+    depends_on:
+      - payment-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  payment-client:
+    build:
+      context: ./client-app/payment
+    container_name: payment-client
+    ports:
+      - "8086:80"
+    depends_on:
+      - payment-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  # ==========================================
+  # 4. Book Catalog Service, Docs & Client
+  # ==========================================
+  book-catalog-service:
+    build:
+      context: ./book-catalog-service
+    container_name: book-catalog-service
+    ports:
+      - "8082:8082"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/bookstore_db
+      - API_KEY=YOUR_SECRET_API_KEY_HERE
+    depends_on:
+      - mongo
+    networks:
+      - bookstore-net
+    restart: always
+
+  book-catalog-docs:
+    image: swaggerapi/swagger-ui
+    container_name: book-catalog-swagger
+    ports:
+      - "9090:8080"
+    environment:
+      - SWAGGER_JSON=/docs/openapi.yaml
+    volumes:
+      - ./book-catalog-service/docs:/docs
+    depends_on:
+      - book-catalog-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  book-catalog-client:
+    build:
+      context: ./client-app
+    container_name: book-catalog-client
+    ports:
+      - "8087:80"
+    depends_on:
+      - book-catalog-service
+      - order-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  # ==========================================
+  # 5. Order Service, Docs & Client
+  # ==========================================
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service-app
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/bookstore_db
+    depends_on:
+      - mongo
+    networks:
+      - bookstore-net
+    restart: always
+
+  order-service-docs:
+    image: swaggerapi/swagger-ui
+    container_name: order-service-swagg
+    ports:
+      - "8085:8080"
+    environment:
+      - SWAGGER_JSON_URL=http://localhost:8083/v3/api-docs
+    depends_on:
+      - order-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  order-service-client:
+    build:
+      context: ./client-app/order-service
+    container_name: bookstore-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - order-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  # ==========================================
+  # 6. Main Client App & Global Swagger Docs
+  # ==========================================
   client-app:
     build: ./client-app
     container_name: client-app
@@ -52,20 +196,24 @@ services:
       - api-gateway
     networks:
       - bookstore-net
+    restart: always
 
-  # ---- Swagger UI (API documentation) ----
   swagger-ui:
     image: swaggerapi/swagger-ui
     container_name: swagger-docs
     ports:
-      - "9090:8080"
+      - "9091:8080"
     environment:
-      SWAGGER_JSON: /docs/openapi.yaml
+      - SWAGGER_JSON=/docs/openapi.yaml
     volumes:
       - ./docs:/docs
     networks:
       - bookstore-net
+    restart: always
 
+# ==========================================
+# Networks & Volumes
+# ==========================================
 networks:
   bookstore-net:
     driver: bridge

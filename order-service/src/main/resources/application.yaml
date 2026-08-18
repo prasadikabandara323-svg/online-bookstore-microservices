@@ -1,0 +1,21 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: order-service
+  data:
+    mongodb:
+      # Local run කරද්දී localhost ගනී. Docker එකෙන් run කරද්දී Environment variable එකෙන් Docker Mongo Host එක ගනී.
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/bookstore_db}
+
+app:
+  api:
+    key: YOUR_SECRET_API_KEY_HERE
+
+springdoc:
+  swagger-ui:
+    title: Order Service API
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs

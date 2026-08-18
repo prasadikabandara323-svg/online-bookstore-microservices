@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gayel Online Book Store</title>
+    <!-- Bootstrap 5 & FontAwesome Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 🎨 Custom Root Color Palette */
+        :root {
+            --header-orange: #C25900;
+            --amber-gold: #E2953B;
+            --hazel-brown: #804010;
+            --dark-bg: #0d0b0a;
+            --card-bg: rgba(33, 30, 27, 0.65);
+            --border-color: rgba(226, 149, 59, 0.2);
+            --text-primary: #F5EBE0;
+            --text-muted: #D1C4B8;
+            --danger-red: #E74C3C;
+            --success-green: #2ECC71;
+            --book-card-bg: rgba(20, 18, 17, 0.8);
+            --table-header-bg: rgba(226, 149, 59, 0.12);
+            --delete-btn-bg: rgba(231, 76, 60, 0.1);
+            --edit-btn-bg: rgba(46, 204, 113, 0.1);
+            --glow-color: rgba(226, 149, 59, 0.25);
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        label {
+            color: var(--text-primary) !important;
+            font-weight: 500;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* 🧭 Top Navigation Styling */
+        .navbar {
+            background: linear-gradient(135deg, var(--header-orange), var(--hazel-brown)) !important;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px var(--glow-color);
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--amber-gold) !important;
+            transform: translateY(-1px);
+        }
+
+        /*  Brand Logo Styles */
+        .brand-logo-img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .hero-logo-img {
+            max-height: 100px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .footer-logo-img {
+            height: 35px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* 🔄 Horizontal Scroll Container & Floating Right Arrow Styles */
+        .category-scroll-wrapper {
+            position: relative;
+        }
+
+        .horizontal-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            gap: 1.2rem;
+            padding-bottom: 12px;
+            padding-top: 5px;
+            scrollbar-width: thin;
+        }
+
+        .horizontal-scroll-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .horizontal-scroll-container::-webkit-scrollbar-thumb {
+            background: var(--amber-gold);
+            border-radius: 10px;
+        }
+
+        .horizontal-scroll-container .book-card-wrapper {
+            flex: 0 0 220px;
+            width: 220px;
+        }
+
+        .scroll-arrow-right {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            background: rgba(13, 11, 10, 0.85);
+            color: var(--amber-gold);
+            border: 1px solid var(--amber-gold);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .scroll-arrow-right:hover {
+            background: var(--amber-gold);
+            color: #000;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /*  Uniform Fixed Height & Width for Cards */
+.book-card {
+    background: var(--book-card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    height: 380px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px var(--glow-color);
+    border-color: var(--amber-gold);
+}
+
+.book-card .text-muted {
+    color: #E6D2C1 !important;
+    font-weight: 600 !important;
+    opacity: 0.95;
+}
+
+/*  Cover Box  */
+.book-cover {
+    height: 260px; /* Education Badge  */
+    width: 100%;
+    background-color: transparent; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+
+.book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.05); 
+    transition: transform 0.3s ease;
+}
+        .cart-overlay-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: var(--amber-gold);
+            color: #fff;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+            z-index: 2;
+        }
+
+        .cart-overlay-btn:hover {
+            background: var(--header-orange);
+            transform: scale(1.1);
+        }
+
+        .btn-amber {
+            background: linear-gradient(45deg, var(--header-orange), var(--amber-gold));
+            color: #fff;
+            border: none;
+            font-weight: bold;
+        }
+
+        .btn-amber:hover {
+            background: linear-gradient(45deg, var(--amber-gold), var(--header-orange));
+            color: #fff;
+        }
+
+        .btn-edit {
+            background-color: var(--edit-btn-bg);
+            color: var(--success-green);
+            border: 1px solid var(--success-green);
+        }
+
+        .btn-edit:hover {
+            background-color: var(--success-green);
+            color: #fff;
+        }
+
+        .btn-delete {
+            background-color: var(--delete-btn-bg);
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red);
+        }
+
+        .btn-delete:hover {
+            background-color: var(--danger-red);
+            color: #fff;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--book-card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--book-card-bg);
+            border-color: var(--amber-gold);
+            color: var(--text-primary);
+            box-shadow: 0 0 8px var(--glow-color);
+        }
+
+        .table {
+            color: var(--text-primary);
+        }
+
+        .table thead {
+            background-color: var(--table-header-bg);
+            color: var(--amber-gold);
+        }
+
+        .badge-category {
+            background-color: rgba(226, 149, 59, 0.15);
+            color: var(--amber-gold);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-content {
+            background: #141211;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            backdrop-filter: blur(15px);
+        }
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+        }
+
+        .hero-banner-custom {
+            background: linear-gradient(90deg, rgba(13, 11, 10, 0.92), rgba(194, 89, 0, 0.65), rgba(13, 11, 10, 0.88)), 
+                        url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+        }
+
+        footer {
+            background: linear-gradient(180deg, rgba(20, 18, 17, 0.95), rgba(10, 8, 7, 0.99));
+            border-top: 1px solid var(--border-color);
+        }
+
+        footer p, footer span, footer div {
+            color: #F5EBE0 !important;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        footer .footer-desc {
+            font-weight: 500;
+        }
+
+        footer .footer-contact-info p {
+            font-weight: 600 !important;
+            color: #FFFFFF !important;
+        }
+
+        footer .copyright-text {
+            font-weight: 700 !important;
+            color: var(--amber-gold) !important;
+            letter-spacing: 0.5px;
+        }
+
+        .toast-container-custom {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4 p-3 sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4 me-4 d-flex align-items-center gap-2" href="#">
+               <img src="logoimage/logo.jpeg" alt="Logo" class="brand-logo-img" onerror="this.style.display='none'">
+               <span>Gayel Online Book Store</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="topNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fa-solid fa-house me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fa-solid fa-right-to-bracket me-1"></i> Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../order-service/cart.html"><i class="fa-solid fa-box-open me-1"></i> Order</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fa-solid fa-credit-card me-1"></i> Payment</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-3">
+                    <a href="../order-service/cart.html" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                        <i class="fa-solid fa-cart-shopping me-1"></i> My Cart
+                    </a>
+
+                    <!-- Admin / User View Switcher -->
+                    <div class="bg-dark bg-opacity-50 px-3 py-1 rounded-pill border border-secondary">
+                        <span class="small fw-bold text-light me-1">Role:</span>
+                        <select id="roleSelect" class="form-select form-select-sm d-inline-block w-auto border-0 bg-transparent text-warning fw-bold" onchange="toggleRole()">
+                            <option value="USER" class="text-dark">👤 User View</option>
+                            <option value="ADMIN" class="text-dark">👑 Admin View</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Toast Notification Container -->
+        <div class="toast-container-custom">
+            <div id="alertBox" class="alert d-none shadow-lg" role="alert"></div>
+        </div>
+
+        <!-- 2. Hero Banner Section -->
+        <div id="userHeaderSection">
+            <div id="heroCarousel" class="carousel slide mb-4 rounded-3 overflow-hidden glass-card border-0" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active p-4 p-md-5 hero-banner-custom">
+                        <div class="d-flex align-items-center justify-content-between w-100 px-md-4">
+                            <div>
+                                <h1 class="fw-bold text-warning mb-3 display-5">Welcome to Gayel Online Book Store</h1>
+                                <p class="mb-0 text-light fs-5">Discover thousands of books from your favorite authors. Enjoy fast delivery to your doorstep!</p>
+                            </div>
+                            <div class="d-none d-md-block ms-3">
+                              <img src="logoimage/logo.jpeg" alt="Gayel Logo" class="hero-logo-img">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔍 Search Bar -->
+        <div class="glass-card p-3 mb-4">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-6">
+                    <h4 class="m-0 fw-bold" style="color: var(--amber-gold);" id="viewTitle">New Arrivals Catalog</h4>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" id="searchInput" class="form-control form-control-sm" onkeyup="fetchBooks()" placeholder="🔍 Search Title, Author, or Category...">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-amber btn-sm w-100" onclick="fetchBooks()"><i class="fa-solid fa-rotate me-1"></i> Refresh</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- USER VIEW: Horizontal Scrollable Catalog -->
+        <div id="userCatalogSection" class="mb-5"></div>
+
+        <!-- ADMIN VIEW: Form & Table View -->
+        <div id="adminSection" class="row g-4 d-none mb-5">
+            <!-- Add / Update Book Form -->
+            <div class="col-md-4">
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-3" id="formHeading" style="color: var(--amber-gold);"><i class="fa-solid fa-plus me-1"></i> Add New Book</h5>
+                    <form id="addBookForm">
+                        <input type="hidden" id="editBookId"> <!-- Hidden ID for Update Mode -->
+                        <div class="mb-2">
+                            <label class="small">Book Title</label>
+                            <input type="text" id="title" class="form-control form-control-sm" required placeholder="e.g. Rich Dad Poor Dad">
+                        </div>
+                        <div class="mb-2">
+                            <label class="small">Author</label>
+                            <input type="text" id="author" class="form-control form-control-sm" required placeholder="e.g. Robert T Kiyosaki">
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="small">Category</label>
+                                <input type="text" id="category" class="form-control form-control-sm" required placeholder="e.g. Finance">
+                            </div>
+                            <div class="col-6">
+                                <label class="small">Language</label>
+                                <input type="text" id="language" class="form-control form-control-sm" placeholder="e.g. English">
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="small">Publisher</label>
+                            <input type="text" id="publisher" class="form-control form-control-sm" placeholder="e.g. Plata Publishing">
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="small">ISBN</label>
+                                <input type="text" id="isbn" class="form-control form-control-sm" placeholder="1612681131">
+                            </div>
+                            <div class="col-6">
+                                <label class="small">ISBN 13</label>
+                                <input type="text" id="isbn13" class="form-control form-control-sm" placeholder="9781612681139">
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="small">Price (LKR)</label>
+                            <input type="number" step="any" min="0" id="price" class="form-control form-control-sm" required placeholder="e.g. 5000.00">
+                        </div>
+                        <div class="mb-2">
+                            <label class="small">Description</label>
+                            <textarea id="description" class="form-control form-control-sm" rows="2" placeholder="Brief book description..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small">Cover Image URL (Optional)</label>
+                            <input type="text" id="imageUrl" class="form-control form-control-sm" placeholder="https://...">
+                        </div>
+                        <button type="submit" id="saveBtnText" class="btn btn-amber btn-sm w-100"><i class="fa-solid fa-floppy-disk me-1"></i> Save Book</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Books Table -->
+            <div class="col-md-8">
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--amber-gold);">Manage Books Inventory</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="booksTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--  Book Details Modal -->
+    <div class="modal fade" id="bookDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalBookTitle" style="color: var(--amber-gold);">Book Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start px-4">
+                    <div class="row g-3">
+                        <div class="col-md-4 text-center">
+                            <img id="modalBookImg" src="" alt="Book Cover" class="img-fluid rounded shadow border border-secondary" style="max-height: 250px; object-fit: cover;">
+                        </div>
+
+                        <div class="col-md-8">
+                            <h4 id="modalTitleText" class="fw-bold mb-3" style="color: var(--amber-gold);"></h4>
+                            
+                            <table class="table table-borderless table-sm text-light small">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 35%;"><i class="fa-solid fa-caret-right me-1 text-warning"></i> <strong>Language</strong></td>
+                                        <td>: <span id="modalLanguage"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fa-solid fa-caret-right me-1 text-warning"></i> <strong>Author</strong></td>
+                                        <td>: <span id="modalAuthor" class="text-info"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fa-solid fa-caret-right me-1 text-warning"></i> <strong>Publisher</strong></td>
+                                        <td>: <span id="modalPublisher" class="text-info"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fa-solid fa-caret-right me-1 text-warning"></i> <strong>ISBN</strong></td>
+                                        <td>: <span id="modalIsbn"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fa-solid fa-caret-right me-1 text-warning"></i> <strong>ISBN 13</strong></td>
+                                        <td>: <span id="modalIsbn13"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="align-top"><i class="fa-solid fa-caret-right me-1 text-warning"></i> <strong>Description</strong></td>
+                                        <td>: <span id="modalDescription"></span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h4 id="modalPriceText" class="fw-bold mt-2" style="color: var(--amber-gold);"></h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button id="modalAddToCartBtn" type="button" class="btn btn-amber btn-sm">
+                        <i class="fa-solid fa-cart-shopping me-1"></i> Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Footer Section -->
+    <footer class="mt-5 pt-5 pb-4">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-5">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                      <img src="logoimage/logo.jpeg" alt="Logo" class="footer-logo-img" onerror="this.style.display='none'">
+                        <h4 class="fw-bold m-0" style="color: var(--amber-gold);">Gayel Online Book Store</h4>
+                    </div>
+                    <p class="footer-desc">Your trusted destination for thousands of original books across all categories. Experience seamless online ordering and island-wide fast delivery.</p>
+                </div>
+                <div class="col-md-4 footer-contact-info">
+                    <h5 class="fw-bold mb-3" style="color: var(--amber-gold);">Contact Us</h5>
+                    <p class="mb-2"><i class="fa-solid fa-location-dot text-warning me-2"></i> Address: Gayel Book Store, Main Street, Colombo.</p>
+                    <p class="mb-2"><i class="fa-solid fa-phone text-warning me-2"></i> Phone: +94 77 123 4567</p>
+                    <p class="mb-0"><i class="fa-solid fa-envelope text-warning me-2"></i> Email: info@gayelbooks.com</p>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="fw-bold mb-3" style="color: var(--amber-gold);">Follow Us</h5>
+                    <div class="d-flex gap-3 fs-4">
+                        <a href="#" class="text-warning"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="text-warning"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="text-warning"><i class="fa-brands fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4 mb-3" style="border-color: var(--border-color);">
+            <div class="text-center copyright-text">
+                © 2026 Gayel Book Store. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript Integration Logic -->
+    <script>
+        const API_BASE_URL = 'http://localhost:8082/books';
+        const BACKEND_BASE_URL = 'http://localhost:8082';
+        const API_KEY = 'YOUR_SECRET_API_KEY_HERE';
+        
+
+        let allBooksList = [];
+
+       document.addEventListener('DOMContentLoaded', () => {
+    toggleRole();
+
+    // Prevent mouse-wheel scroll from silently changing number input values
+    document.addEventListener('wheel', (e) => {
+        if (document.activeElement.type === 'number') {
+            document.activeElement.blur();
+        }
+    }, { passive: true });
+});
+
+        function toggleRole() {
+            const role = document.getElementById('roleSelect').value;
+            const userSection = document.getElementById('userCatalogSection');
+            const userHeader = document.getElementById('userHeaderSection');
+            const adminSection = document.getElementById('adminSection');
+            const viewTitle = document.getElementById('viewTitle');
+
+            if (role === 'ADMIN') {
+                userSection.classList.add('d-none');
+                userHeader.classList.add('d-none');
+                adminSection.classList.remove('d-none');
+                viewTitle.innerText = "Admin Catalog Management";
+            } else {
+                adminSection.classList.add('d-none');
+                userSection.classList.remove('d-none');
+                userHeader.classList.remove('d-none');
+                viewTitle.innerText = "Explore Our New Arrivals";
+            }
+            fetchBooks();
+        }
+
+        async function fetchBooks() {
+            const searchKeyword = document.getElementById('searchInput').value.trim();
+            let url = API_BASE_URL;
+
+            if (searchKeyword !== "") {
+                url += `?search=${encodeURIComponent(searchKeyword)}`;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-API-KEY': API_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Unauthorized or failed to load books.');
+
+                const books = await response.json();
+                allBooksList = books;
+                const role = document.getElementById('roleSelect').value;
+
+                if (role === 'USER') {
+                    renderUserCards(books);
+                } else {
+                    renderAdminTable(books);
+                }
+            } catch (error) {
+                showAlert(error.message, 'danger');
+            }
+        }
+
+        function scrollContainer(containerId, scrollAmount) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.scrollBy({
+                    left: scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function renderUserCards(books) {
+            const container = document.getElementById('userCatalogSection');
+            container.innerHTML = '';
+
+            if (books.length === 0) {
+                container.innerHTML = `<div class="col-12 text-center text-muted py-5">No books available in catalog.</div>`;
+                return;
+            }
+
+            const groupedBooks = books.reduce((acc, book) => {
+                const categoryName = book.category || 'Uncategorized';
+                if (!acc[categoryName]) {
+                    acc[categoryName] = [];
+                }
+                acc[categoryName].push(book);
+                return acc;
+            }, {});
+
+            let catIndex = 0;
+            for (const category in groupedBooks) {
+                catIndex++;
+                const containerId = `cat-container-${catIndex}`;
+
+                let categoryHtml = `
+                    <div class="mt-4 mb-2 border-bottom pb-2" style="border-color: var(--border-color) !important;">
+                        <h4 class="fw-bold m-0 d-flex align-items-center" style="color: var(--amber-gold);">
+                            <i class="fa-solid fa-layer-group me-2 fs-5"></i> ${category}
+                        </h4>
+                    </div>
+
+                    <div class="category-scroll-wrapper mb-4">
+                        <button class="scroll-arrow-right" onclick="scrollContainer('${containerId}', 300)" title="Scroll Right">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                        <div id="${containerId}" class="horizontal-scroll-container">
+                `;
+
+                groupedBooks[category].forEach(book => {
+                  
+// const img = book.imageUrl || 'https://dummyimage.com/200x280/cccccc/ffffff.png&text=No+Cover';
+
+
+let img = 'https://dummyimage.com/200x280/cccccc/ffffff.png&text=No+Cover';
+
+if (book.imageUrl && book.imageUrl.trim() !== '') {
+    // Creating a dynamic full URL by prepending BACKEND_BASE_URL to the image path.
+    img = book.imageUrl.startsWith('http') 
+        ? book.imageUrl 
+        : `${BACKEND_BASE_URL}/${book.imageUrl.replace(/^\//, '')}`;
+}
+                    categoryHtml += `
+                        <div class="book-card-wrapper">
+                            <div class="book-card p-2" onclick="showBookDetails('${book.id}')">
+                                <div>
+                                    <div class="book-cover rounded mb-2">
+                                        <img src="${img}" alt="${book.title}" onerror="this.src='https://dummyimage.com/200x280/cccccc/ffffff.png&text=No+Cover'">
+                                        <button class="cart-overlay-btn" onclick="event.stopPropagation(); addToCart('${book.id}', '${escapeQuotes(book.title)}', ${book.price})" title="Add to Cart">
+                                            <i class="fa-solid fa-cart-shopping"></i>
+                                        </button>
+                                    </div>
+                                    <span class="badge badge-category small mb-1">${book.category || 'General'}</span>
+                                    <h6 class="fw-bold mb-1 text-truncate" title="${book.title}">${book.title}</h6>
+                                    <p class="small text-muted mb-0 text-truncate">${book.author}</p>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                                    <span class="fw-bold fs-6" style="color: var(--amber-gold);">LKR ${parseFloat(book.price).toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                categoryHtml += `
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += categoryHtml;
+            }
+        }
+
+       function renderAdminTable(books) {
+            const tbody = document.getElementById('booksTableBody');
+            tbody.innerHTML = '';
+
+            if (books.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No books available.</td></tr>`;
+                return;
+            }
+
+            books.forEach(book => {
+                // Here, the `encodeURIComponent` part has been removed, and `book.id` is used directly.
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${book.title}</strong></td>
+                        <td class="text-muted">${book.author}</td>
+                        <td><span class="badge badge-category">${book.category}</span></td>
+                        <td style="color: var(--amber-gold); font-weight: bold;">LKR ${parseFloat(book.price).toFixed(2)}</td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-sm btn-edit" onclick="loadBookForEdit('${book.id}')">
+                                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-delete" onclick="deleteBook('${book.id}')">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // The fully corrected loadBookForEdit function
+        function loadBookForEdit(bookId) {
+            // Finding the book corresponding to the relevant ID from the allBooksList.
+            const book = allBooksList.find(b => b.id == bookId);
+            
+            if (!book) return; // If  don't get a book, not do anything.
+            
+            document.getElementById('editBookId').value = book.id;
+            document.getElementById('title').value = book.title || '';
+            document.getElementById('author').value = book.author || '';
+            document.getElementById('category').value = book.category || '';
+            document.getElementById('language').value = book.language || '';
+            document.getElementById('publisher').value = book.publisher || '';
+            document.getElementById('isbn').value = book.isbn || '';
+            document.getElementById('isbn13').value = book.isbn13 || '';
+            document.getElementById('price').value = book.price || '';
+            document.getElementById('description').value = book.description || '';
+            document.getElementById('imageUrl').value = book.imageUrl || '';
+
+            // Change Form Header and Button to Update Mode
+            document.getElementById('formHeading').innerHTML = `<i class="fa-solid fa-pen-to-square me-1"></i> Update Book Details`;
+            document.getElementById('saveBtnText').innerHTML = `<i class="fa-solid fa-floppy-disk me-1"></i> Update Book`;
+            
+            // Scroll to form smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteBook(id) {
+            if (!confirm('Are you sure you want to delete this book?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-API-KEY': API_KEY }
+                });
+
+                if (response.ok) {
+                    showAlert('Book deleted successfully!', 'success');
+                    fetchBooks();
+                } else {
+                    throw new Error('Failed to delete book.');
+                }
+            } catch (error) {
+                showAlert(error.message, 'danger');
+            }
+        }
+
+        function showBookDetails(bookId) {
+            const book = allBooksList.find(b => b.id === bookId);
+            if (!book) return;
+
+            document.getElementById('modalBookTitle').innerText = book.title;
+            document.getElementById('modalTitleText').innerText = book.title;
+            document.getElementById('modalAuthor').innerText = book.author || 'N/A';
+            document.getElementById('modalPriceText').innerText = `LKR ${parseFloat(book.price).toFixed(2)}`;
+
+            document.getElementById('modalLanguage').innerText = book.language || 'English';
+            document.getElementById('modalPublisher').innerText = book.publisher || 'N/A';
+            document.getElementById('modalIsbn').innerText = book.isbn || 'N/A';
+            document.getElementById('modalIsbn13').innerText = book.isbn13 || 'N/A';
+            document.getElementById('modalDescription').innerText = book.description || 'No description available.';
+
+            
+            const imgElement = document.getElementById('modalBookImg');
+            if (book.imageUrl && book.imageUrl.trim() !== '') {
+                let modalImg = book.imageUrl.startsWith('http') 
+                    ? book.imageUrl 
+                    : `${BACKEND_BASE_URL}/${book.imageUrl.replace(/^\//, '')}`;
+                
+                imgElement.src = modalImg;
+            } else {
+                imgElement.src = 'https://via.placeholder.com/200x280?text=No+Cover';
+            }
+            const modalAddToCartBtn = document.getElementById('modalAddToCartBtn');
+            modalAddToCartBtn.onclick = () => {
+                addToCart(book.id, book.title, book.price);
+                const modalInstance = bootstrap.Modal.getInstance(document.getElementById('bookDetailsModal'));
+                if (modalInstance) modalInstance.hide();
+            };
+
+            const detailsModal = new bootstrap.Modal(document.getElementById('bookDetailsModal'));
+            detailsModal.show();
+        }
+
+        function escapeQuotes(str) {
+            return str ? str.replace(/'/g, "\\'") : '';
+        }
+
+        function addToCart(id, title, price) {
+            let cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+            const existingItem = cart.find(item => item.id === id);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ id, title, price, quantity: 1 });
+            }
+
+            localStorage.setItem('shoppingCart', JSON.stringify(cart));
+            showAlert(`"${title}" added to shopping cart! 🛒`, 'success');
+        }
+
+        document.getElementById('addBookForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editBookId').value;
+            
+            const bookData = {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                category: document.getElementById('category').value,
+                price: parseFloat(document.getElementById('price').value),
+                imageUrl: document.getElementById('imageUrl').value,
+                language: document.getElementById('language').value || 'English',
+                publisher: document.getElementById('publisher').value || 'N/A',
+                isbn: document.getElementById('isbn').value || 'N/A',
+                isbn13: document.getElementById('isbn13').value || 'N/A',
+                description: document.getElementById('description').value || ''
+            };
+
+            let url = API_BASE_URL;
+            let method = 'POST';
+
+            // If editId exists, switch to PUT (Update) method
+            if (editId) {
+                url = `${API_BASE_URL}/${editId}`;
+                method = 'PUT';
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 
+                        'X-API-KEY': API_KEY,
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(bookData)
+                });
+
+                if (response.ok) {
+                    const successMsg = editId ? 'Book updated successfully!' : 'Book added successfully!';
+                    showAlert(successMsg, 'success');
+                    
+                    // Reset Form and State
+                    document.getElementById('addBookForm').reset();
+                    document.getElementById('editBookId').value = '';
+                    document.getElementById('formHeading').innerHTML = `<i class="fa-solid fa-plus me-1"></i> Add New Book`;
+                    document.getElementById('saveBtnText').innerHTML = `<i class="fa-solid fa-floppy-disk me-1"></i> Save Book`;
+                    
+                    fetchBooks();
+                } else {
+                    throw new Error('Failed to save/update book.');
+                }
+            } catch (error) {
+                showAlert(error.message, 'danger');
+            }
+        });
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} shadow-lg`;
+            alertBox.innerText = message;
+            alertBox.classList.remove('d-none');
+            setTimeout(() => alertBox.classList.add('d-none'), 3000);
+        }
+    </script>
+</body>
+</html>
