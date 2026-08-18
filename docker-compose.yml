@@ -1,8 +1,8 @@
-version: '3.8'
+
 
 services:
   # ==========================================
-  # 1. Central MongoDB Database
+  # 1. Central MongoDB Database for the Microservices
   # ==========================================
   mongo:
     image: mongo:7
@@ -16,7 +16,7 @@ services:
     restart: always
 
   # ==========================================
-  # 2. Auth Service & API Gateway
+  # 2. User & Admin Authentication Service + API Gateway
   # ==========================================
   user-auth-service:
     build: ./user-auth-service
@@ -43,7 +43,27 @@ services:
       - "8080:8080"
     environment:
       - AUTH_SERVICE_HOST=user-auth-service
+      - BOOK_CATALOG_HOST=book-catalog-service
+      - ORDER_SERVICE_HOST=order-service
+      - PAYMENT_SERVICE_HOST=payment-service
       - JWT_SECRET=bookstore-super-secret-key-change-this-in-production-min-256-bits-long
+    depends_on:
+      - user-auth-service
+      - book-catalog-service
+      - order-service
+      - payment-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  # Auth Service Swagger UI Documentation
+  auth-service-docs:
+    image: swaggerapi/swagger-ui
+    container_name: auth-docs-container
+    ports:
+      - "9091:8080"
+    environment:
+      - SWAGGER_JSON_URL=http://user-auth-service:8081/v3/api-docs
     depends_on:
       - user-auth-service
     networks:
@@ -51,7 +71,7 @@ services:
     restart: always
 
   # ==========================================
-  # 3. Payment Service, Docs & Client
+  # 3. Payment Service & Docs & Client
   # ==========================================
   payment-service:
     build: ./payment-service
@@ -96,7 +116,7 @@ services:
     restart: always
 
   # ==========================================
-  # 4. Book Catalog Service, Docs & Client
+  # 4. Book Catalog Service & Docs & Client
   # ==========================================
   book-catalog-service:
     build:
@@ -142,7 +162,7 @@ services:
     restart: always
 
   # ==========================================
-  # 5. Order Service, Docs & Client
+  # 5. Order Service & Docs & Client
   # ==========================================
   order-service:
     build:
@@ -165,7 +185,7 @@ services:
     ports:
       - "8085:8080"
     environment:
-      - SWAGGER_JSON_URL=http://localhost:8083/v3/api-docs
+      - SWAGGER_JSON_URL=http://order-service-app:8083/v3/api-docs
     depends_on:
       - order-service
     networks:
@@ -185,7 +205,7 @@ services:
     restart: always
 
   # ==========================================
-  # 6. Main Client App & Global Swagger Docs
+  # 6. Unified Client App (Frontend)
   # ==========================================
   client-app:
     build: ./client-app
@@ -194,25 +214,16 @@ services:
       - "3001:80"
     depends_on:
       - api-gateway
-    networks:
-      - bookstore-net
-    restart: always
-
-  swagger-ui:
-    image: swaggerapi/swagger-ui
-    container_name: swagger-docs
-    ports:
-      - "9091:8080"
-    environment:
-      - SWAGGER_JSON=/docs/openapi.yaml
-    volumes:
-      - ./docs:/docs
+      - user-auth-service
+      - book-catalog-service
+      - order-service
+      - payment-service
     networks:
       - bookstore-net
     restart: always
 
 # ==========================================
-# Networks & Volumes
+# Networks & Volumes Configuration
 # ==========================================
 networks:
   bookstore-net:
