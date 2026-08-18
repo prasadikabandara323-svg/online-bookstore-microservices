@@ -1,6 +1,3 @@
-version: "3.8"
-
-services:
 version: '3.8'
 
 services:
@@ -12,20 +9,48 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    restart: always
 
+  # 2. Payment Service
   payment-service:
     build: ./payment-service
     container_name: payment-service
     ports:
       - "8084:8084"
     environment:
-      SPRING_MONGODB_URI: mongodb://mongo:27017/paymentdb
-      API_SECURITY_KEY: YOUR_SECRET_API_KEY_HERE
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/bookstore_db
+      - SPRING_MONGODB_URI=mongodb://mongo:27017/bookstore_db
+      - API_SECURITY_KEY=YOUR_SECRET_API_KEY_HERE
     depends_on:
       - mongo
     restart: always
 
-  # 2. Book Catalog Service 
+  # Payment Service Swagger UI Documentation
+  payment-service-docs:
+    image: swaggerapi/swagger-ui
+    container_name: payment-service-swagger
+    ports:
+      - "8088:8080"
+    environment:
+      - SWAGGER_JSON=/docs/openapi.yaml
+    volumes:
+      - ./payment-service/docs:/docs
+    depends_on:
+      - payment-service
+    restart: always
+
+  # Payment Service Frontend UI
+  payment-client:
+    build:
+      context: ./client-app/payment
+    container_name: payment-client
+    ports:
+      - "8086:80"
+    depends_on:
+      - payment-service
+    restart: always
+
+  # 3. Book Catalog Service 
   book-catalog-service:
     build:
       context: ./book-catalog-service
@@ -39,7 +64,7 @@ services:
       - mongo
     restart: always
 
-  # 3. Book Catalog Swagger UI Documentation
+  # Book Catalog Swagger UI Documentation
   book-catalog-docs:
     image: swaggerapi/swagger-ui
     container_name: book-catalog-swagger
@@ -53,7 +78,7 @@ services:
       - book-catalog-service
     restart: always
 
-  # 4. Book Catalog Frontend UI
+  # Book Catalog Frontend UI
   book-catalog-client:
     build:
       context: ./client-app
@@ -65,7 +90,7 @@ services:
       - order-service
     restart: always
 
-  # 5. Order Service (Backend Microservice)
+  # 4. Order Service (Backend Microservice)
   order-service:
     build:
       context: ./order-service
@@ -79,7 +104,7 @@ services:
       - mongo
     restart: always
 
-  # 6. Order Service Swagger UI Documentation
+  # Order Service Swagger UI Documentation
   order-service-docs:
     image: swaggerapi/swagger-ui
     container_name: order-service-swagg
@@ -91,7 +116,7 @@ services:
       - order-service
     restart: always
 
-  # 7. Order Service Frontend UI
+  # Order Service Frontend UI
   order-service-client:
     build:
       context: ./client-app/order-service
