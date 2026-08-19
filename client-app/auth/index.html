@@ -57,13 +57,23 @@
 
       try {
         const data = await AuthAPI.login(email, password);
+        // data.role eka "ADMIN" nathnam "USER" - api.js eken dan
+        // localStorage eke ("role" key eka) save wela thiyenawa.
+
         showMessage(
           data.role === "ADMIN" ? "Welcome back, admin. Redirecting…" : "Signed in. Redirecting…",
           "success"
         );
-        // NOTE: point ADMIN accounts at the admin dashboard once it exists,
-        // e.g. "../admin/dashboard.html"
-        setTimeout(() => (window.location.href = "profile.html"), 800);
+
+        // Cross-port redirect: book-catalog runs on its own container
+        // (localhost:8087), so localStorage from THIS origin (3001) isn't
+        // visible there. Pass the role via a URL query param instead -
+        // book-catalog's own JS reads ?view=... to pick User/Admin view.
+        const destination = data.role === "ADMIN"
+            ? "http://localhost:8087/index.html?view=admin"
+            : "http://localhost:8087/index.html?view=user";
+        setTimeout(() => (window.location.href = destination), 800);
+
       } catch (err) {
         showMessage(err.message, "error");
         submitBtn.disabled = false;

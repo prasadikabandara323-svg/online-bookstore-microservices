@@ -88,8 +88,14 @@
 
       try {
         await AuthAPI.register(fullName, email, password);
-        showMessage("Account created. Redirecting to sign in…", "success");
-        setTimeout(() => (window.location.href = "login.html"), 1200);
+        showMessage("Account created! Taking you to the store…", "success");
+
+        // New registrations are always USER role (register-admin is a
+        // separate, protected endpoint) - go straight to book-catalog's
+        // user view. Note: /register doesn't return a token, so the user
+        // isn't "logged in" yet here - they can browse, but will need to
+        // sign in separately for anything that requires auth (cart, etc).
+        setTimeout(() => (window.location.href = "http://localhost:8087/index.html?view=user"), 1200);
       } catch (err) {
         showMessage(err.message, "error");
         submitBtn.disabled = false;
