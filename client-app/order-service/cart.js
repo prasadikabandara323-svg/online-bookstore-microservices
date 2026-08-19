@@ -38,7 +38,7 @@ function renderCart(cart) {
     if (!cart.items || cart.items.length === 0) {
         emptyMsg.classList.remove('hidden');
         totalAmountElem.innerText = 'LKR 0.00';
-        checkoutBtn.disabled = true;
+        checkoutBtn.disabled = false;
         return;
     }
 
