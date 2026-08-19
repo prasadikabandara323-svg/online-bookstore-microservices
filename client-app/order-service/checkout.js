@@ -23,7 +23,7 @@ async function fetchCartSummary() {
         document.getElementById('checkoutTotal').innerText = `LKR ${currentCartTotal.toFixed(2)}`;
         
         if (currentCartTotal === 0) {
-            document.getElementById('placeOrderBtn').disabled = true;
+            document.getElementById('placeOrderBtn').disabled = false;
             showToast('Your cart is empty!', 'error');
         }
     } catch (error) {
@@ -54,7 +54,12 @@ async function handleCheckout(event) {
         if (response.ok) {
             const createdOrder = await response.json();
             await clearCartAfterOrder();
+            
+            // Modal එකෙන් යන්න ඕන නම්
             showSuccessModal(createdOrder.id, createdOrder.totalAmount);
+            
+            // Modal එක නැතුව කෙලින්ම Payment එකට Auto Redirect කරන්න ඕන නම් පහත Line එක Uncomment කරන්න:
+            // goToPayment(createdOrder.id, createdOrder.totalAmount);
         } else {
             showToast('Failed to place order. Try again.', 'error');
             btn.disabled = false;
@@ -83,10 +88,18 @@ function showSuccessModal(orderId, total) {
     document.getElementById('modalOrderId').innerText = `#${orderId}`;
     document.getElementById('modalTotalAmount').innerText = `LKR ${total.toFixed(2)}`;
     document.getElementById('successModal').classList.remove('hidden');
+    
+    // Modal එකේ button එක click කළාම Payment එකට යන්න function එක set කිරීම
+    const modalBtn = document.querySelector('#successModal button');
+    if (modalBtn) {
+        modalBtn.innerText = 'Proceed to Payment 💳';
+        modalBtn.onclick = () => goToPayment(orderId, total);
+    }
 }
 
-function goToOrders() {
-    window.location.href = 'orders.html';
+// Payment Page (Port 8086) එකට Redirect වෙන Function එක
+function goToPayment(orderId, total) {
+    window.location.href = `http://localhost:8086/payment.html?orderId=${orderId}&amount=${total}`;
 }
 
 function showToast(message, type = 'success') {
