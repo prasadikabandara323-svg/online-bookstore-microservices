@@ -17,6 +17,7 @@ public class CartItem {
 
     private Long userId;
     private Long bookId;
+    private String bookTitle; // 👈 මෙන්න මේ Field එක එකතු කරන්න
     private Integer quantity;
     private Double price;
 }
