@@ -61,4 +61,14 @@ public class PaymentController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    // 5. Endpoint: Delete a Payment (DELETE)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePayment(@PathVariable String id) {
+        if (!paymentRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        paymentRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
