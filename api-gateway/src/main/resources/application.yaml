@@ -1,0 +1,40 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: http://${AUTH_SERVICE_HOST:localhost}:8081
+              predicates:
+                - Path=/api/auth/**
+              filters:
+                - StripPrefix=1
+                - AddRequestHeader=X-API-KEY, YOUR_SECRET_API_KEY_HERE
+            - id: book-catalog-service
+              uri: http://${BOOK_CATALOG_HOST:localhost}:8082
+              predicates:
+                - Path=/api/books/**
+              filters:
+                - StripPrefix=1
+                - AddRequestHeader=X-API-KEY, YOUR_SECRET_API_KEY_HERE
+            - id: order-service
+              uri: http://${ORDER_SERVICE_HOST:localhost}:8083
+              predicates:
+                - Path=/api/orders/**,/api/cart/**
+              filters:
+                - StripPrefix=1
+                - AddRequestHeader=X-API-KEY, YOUR_SECRET_API_KEY_HERE
+            - id: payment-notification-service
+              uri: http://${PAYMENT_SERVICE_HOST:localhost}:8084
+              predicates:
+                - Path=/api/payments/**
+              filters:
+                - StripPrefix=1
+                - AddRequestHeader=X-API-KEY, YOUR_SECRET_API_KEY_HERE
+jwt:
+  secret: ${JWT_SECRET:bookstore-super-secret-key-change-this-in-production-min-256-bits-long}

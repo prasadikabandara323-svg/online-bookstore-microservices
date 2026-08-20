@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sign In — Gayel Online Book Store</title>
+  <link rel="stylesheet" href="../shared/auth.css" />
+</head>
+<body>
+  <div id="site-header-root"></div>
+
+  <div class="page">
+    <div class="card">
+      <p class="eyebrow">Welcome Back</p>
+      <h1>Sign in</h1>
+      <p class="subtitle">Enter your credentials to reach the front desk.</p>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="jane@example.com" required />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Your password" required />
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <button type="submit" class="primary" id="submitBtn">Sign in</button>
+      </form>
+
+      <p class="footline"><a href="forgot-password.html">Forgot your password?</a></p>
+      <hr class="divider" />
+      <p class="footline">New here? <a href="register.html">Create an account</a></p>
+    </div>
+  </div>
+
+  <script src="../shared/api.js"></script>
+  <script src="../shared/header.js"></script>
+  <script>
+    const form = document.getElementById("loginForm");
+    const messageEl = document.getElementById("message");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = `message show ${type}`;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Signing in…";
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        const data = await AuthAPI.login(email, password);
+        // data.role eka "ADMIN" nathnam "USER" - api.js eken dan
+        // localStorage eke ("role" key eka) save wela thiyenawa.
+
+        showMessage(
+          data.role === "ADMIN" ? "Welcome back, admin. Redirecting…" : "Signed in. Redirecting…",
+          "success"
+        );
+
+        // Cross-port redirect: book-catalog runs on its own container
+        // (localhost:8087), so localStorage from THIS origin (3001) isn't
+        // visible there. Pass the role via a URL query param instead -
+        // book-catalog's own JS reads ?view=... to pick User/Admin view.
+        const destination = data.role === "ADMIN"
+            ? "http://localhost:8087/index.html?view=admin"
+            : "http://localhost:8087/index.html?view=user";
+        setTimeout(() => (window.location.href = destination), 800);
+
+      } catch (err) {
+        showMessage(err.message, "error");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Sign in";
+      }
+    });
+  </script>
+</body>
+</html>

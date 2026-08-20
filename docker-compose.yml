@@ -1,7 +1,7 @@
-version: '3.8'
-
 services:
+  # ==========================================
   # 1. Central MongoDB Database for the Microservices
+  # ==========================================
   mongo:
     image: mongo:7
     container_name: bookstore-mongo
@@ -9,9 +9,82 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - bookstore-net
     restart: always
 
-  # 2. Payment Service
+  # ==========================================
+  # 2. User & Admin Authentication Service + API Gateway
+  # ==========================================
+  user-auth-service:
+    build: ./user-auth-service
+    container_name: user-auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/bookstore_db
+      - MONGO_HOST=mongo
+      - JWT_SECRET=bookstore-super-secret-key-change-this-in-production-min-256-bits-long
+      - API_KEY=YOUR_SECRET_API_KEY_HERE
+      - MAIL_USERNAME=ayodhyaranathunge@gmail.com
+      - MAIL_PASSWORD=sgte ybwi wqiw fwzx
+    depends_on:
+      - mongo
+    networks:
+      - bookstore-net
+    restart: always
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_SERVICE_HOST=user-auth-service
+      - BOOK_CATALOG_HOST=book-catalog-service
+      - ORDER_SERVICE_HOST=order-service
+      - PAYMENT_SERVICE_HOST=payment-service
+      - JWT_SECRET=bookstore-super-secret-key-change-this-in-production-min-256-bits-long
+    depends_on:
+      - user-auth-service
+      - book-catalog-service
+      - order-service
+      - payment-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  # Auth Service Swagger UI Documentation
+  auth-service-docs:
+    image: swaggerapi/swagger-ui
+    container_name: auth-docs-container
+    ports:
+      - "9091:8080"
+    environment:
+      - SWAGGER_JSON_URL=http://user-auth-service:8081/v3/api-docs
+    depends_on:
+      - user-auth-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  # అලුතින් එකතු කරන ලද Auth Client Service (Port 3002)
+  auth-client:
+    build:
+      context: ./client-app/auth
+      dockerfile: Dockerfile
+    container_name: auth-client
+    ports:
+      - "3001:80"
+    depends_on:
+      - user-auth-service
+    networks:
+      - bookstore-net
+    restart: always
+
+  # ==========================================
+  # 3. Payment Service & Docs & Client
+  # ==========================================
   payment-service:
     build: ./payment-service
     container_name: payment-service
@@ -23,9 +96,10 @@ services:
       - API_SECURITY_KEY=YOUR_SECRET_API_KEY_HERE
     depends_on:
       - mongo
+    networks:
+      - bookstore-net
     restart: always
 
-  # Payment Service Swagger UI Documentation
   payment-service-docs:
     image: swaggerapi/swagger-ui
     container_name: payment-service-swagger
@@ -37,9 +111,10 @@ services:
       - ./payment-service/docs:/docs
     depends_on:
       - payment-service
+    networks:
+      - bookstore-net
     restart: always
 
-  # Payment Service Frontend UI
   payment-client:
     build:
       context: ./client-app/payment
@@ -48,9 +123,13 @@ services:
       - "8086:80"
     depends_on:
       - payment-service
+    networks:
+      - bookstore-net
     restart: always
 
-  # 3. Book Catalog Service 
+  # ==========================================
+  # 4. Book Catalog Service & Docs & Client
+  # ==========================================
   book-catalog-service:
     build:
       context: ./book-catalog-service
@@ -62,9 +141,10 @@ services:
       - API_KEY=YOUR_SECRET_API_KEY_HERE
     depends_on:
       - mongo
+    networks:
+      - bookstore-net
     restart: always
 
-  # Book Catalog Swagger UI Documentation
   book-catalog-docs:
     image: swaggerapi/swagger-ui
     container_name: book-catalog-swagger
@@ -76,21 +156,26 @@ services:
       - ./book-catalog-service/docs:/docs
     depends_on:
       - book-catalog-service
+    networks:
+      - bookstore-net
     restart: always
 
-  # Book Catalog Frontend UI
   book-catalog-client:
     build:
-      context: ./client-app
+      context: ./client-app/book-catalog
+      dockerfile: Dockerfile
     container_name: book-catalog-client
     ports:
       - "8087:80"
     depends_on:
       - book-catalog-service
-      - order-service
+    networks:
+      - bookstore-net
     restart: always
 
-  # 4. Order Service (Backend Microservice)
+  # ==========================================
+  # 5. Order Service & Docs & Client
+  # ==========================================
   order-service:
     build:
       context: ./order-service
@@ -102,21 +187,23 @@ services:
       - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/bookstore_db
     depends_on:
       - mongo
+    networks:
+      - bookstore-net
     restart: always
 
-  # Order Service Swagger UI Documentation
   order-service-docs:
     image: swaggerapi/swagger-ui
     container_name: order-service-swagg
     ports:
       - "8085:8080"
     environment:
-      - SWAGGER_JSON_URL=http://localhost:8083/v3/api-docs
+      - SWAGGER_JSON_URL=http://order-service-app:8083/v3/api-docs
     depends_on:
       - order-service
+    networks:
+      - bookstore-net
     restart: always
 
-  # Order Service Frontend UI
   order-service-client:
     build:
       context: ./client-app/order-service
@@ -125,7 +212,16 @@ services:
       - "3000:80"
     depends_on:
       - order-service
+    networks:
+      - bookstore-net
     restart: always
+
+# ==========================================
+# Networks & Volumes Configuration
+# ==========================================
+networks:
+  bookstore-net:
+    driver: bridge
 
 volumes:
   mongo-data:

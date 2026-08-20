@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Profile — Gayel Online Book Store</title>
+  <link rel="stylesheet" href="../shared/auth.css" />
+</head>
+<body>
+  <div id="site-header-root"></div>
+
+  <div class="page">
+    <div class="card wide">
+      <p class="eyebrow">Your Account</p>
+      <h1 id="greeting">Welcome</h1>
+      <p class="subtitle">Update your details or manage your account below.</p>
+
+      <div class="avatar-row">
+        <div class="avatar" id="avatarPreview">👤</div>
+        <div class="avatar-actions">
+          <label for="imageInput" class="file-label">Change photo</label>
+          <input type="file" id="imageInput" accept="image/*" />
+          <button type="button" class="remove-photo-link" id="removePhotoBtn">Remove photo</button>
+          <span class="hint">JPG or PNG, under 2MB looks best</span>
+        </div>
+      </div>
+
+      <form id="profileForm">
+        <div class="field">
+          <label for="fullName">Full name</label>
+          <input type="text" id="fullName" required />
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" disabled />
+          <span class="field-hint">Email can't be changed here</span>
+        </div>
+        <div class="field">
+          <label>Role</label>
+          <div><span class="role-badge" id="roleBadge">—</span></div>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <button type="submit" class="primary" id="saveBtn">Save changes</button>
+      </form>
+
+      <hr class="divider" />
+
+      <button type="button" class="secondary" id="logoutBtn" style="width:100%; margin-bottom: 10px;">
+        Log out
+      </button>
+      <button type="button" class="danger" id="deleteBtn" style="width:100%;">
+        Delete my account
+      </button>
+    </div>
+  </div>
+
+  <script src="../shared/api.js"></script>
+  <script src="../shared/header.js"></script>
+  <script>
+    const messageEl = document.getElementById("message");
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = `message show ${type}`;
+    }
+
+    // ---- Guard: must be logged in ----
+    if (!AuthAPI.isLoggedIn()) {
+      window.location.href = "login.html";
+    }
+
+    // ---- Populate from stored session ----
+    const fullNameEl = document.getElementById("fullName");
+    const emailEl = document.getElementById("email");
+    const roleBadge = document.getElementById("roleBadge");
+    const avatarPreview = document.getElementById("avatarPreview");
+
+    function renderAvatar(dataUri) {
+      avatarPreview.innerHTML = dataUri
+        ? `<img src="${dataUri}" alt="Profile picture" />`
+        : "👤";
+    }
+
+    function loadFromSession() {
+      const fullName = AuthAPI.getFullName();
+      const email = AuthAPI.getEmail();
+      const role = AuthAPI.getRole();
+      const profileImage = AuthAPI.getProfileImage();
+
+      document.getElementById("greeting").textContent = `Welcome, ${fullName || "reader"}`;
+      fullNameEl.value = fullName || "";
+      emailEl.value = email || "";
+
+      roleBadge.textContent = role || "USER";
+      roleBadge.className = `role-badge ${role === "ADMIN" ? "admin" : ""}`;
+
+      renderAvatar(profileImage);
+    }
+
+    loadFromSession();
+
+    // ---- Image upload -> base64 preview (sent on Save) ----
+    let pendingImage = null; // null = no change; "" = remove photo; string = new base64 image
+
+    document.getElementById("imageInput").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        showMessage("Image is too large - please pick something under 2MB.", "error");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        pendingImage = reader.result; // data:image/...;base64,....
+        renderAvatar(pendingImage);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ---- Remove photo ----
+    document.getElementById("removePhotoBtn").addEventListener("click", () => {
+      pendingImage = "";
+      renderAvatar(null);
+      document.getElementById("imageInput").value = "";
+    });
+
+    // ---- Save profile (name + optional new image) ----
+    document.getElementById("profileForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById("saveBtn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+
+      try {
+        await AuthAPI.updateProfile(fullNameEl.value.trim(), pendingImage);
+        showMessage("Profile updated.", "success");
+        pendingImage = null;
+        loadFromSession();
+      } catch (err) {
+        showMessage(err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save changes";
+      }
+    });
+
+    // ---- Logout ----
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      AuthAPI.logout();
+      window.location.href = "index.html";
+    });
+
+    // ---- Delete account ----
+    document.getElementById("deleteBtn").addEventListener("click", async () => {
+      const confirmed = window.confirm(
+        "This permanently deletes your account. This cannot be undone. Continue?"
+      );
+      if (!confirmed) return;
+
+      try {
+        await AuthAPI.deleteAccount();
+        AuthAPI.logout();
+        showMessage("Account deleted. Redirecting…", "success");
+        setTimeout(() => (window.location.href = "register.html"), 1200);
+      } catch (err) {
+        showMessage(err.message, "error");
+      }
+    });
+  </script>
+</body>
+</html>

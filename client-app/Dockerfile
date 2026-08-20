@@ -1,3 +1,4 @@
 FROM nginx:alpine
-COPY book-catalog /usr/share/nginx/html
+COPY auth/ /usr/share/nginx/html/
+COPY shared/ /usr/share/nginx/html/shared/
 EXPOSE 80
