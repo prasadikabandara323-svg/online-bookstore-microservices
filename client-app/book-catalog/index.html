@@ -354,25 +354,28 @@
             </button>
 
             <div class="collapse navbar-collapse" id="topNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#"><i class="fa-solid fa-house me-1"></i> Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fa-solid fa-right-to-bracket me-1"></i> Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../order-service/cart.html"><i class="fa-solid fa-box-open me-1"></i> Order</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fa-solid fa-credit-card me-1"></i> Payment</a>
-                    </li>
-                </ul>
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
+    <li class="nav-item">
+        <a class="nav-link" href="http://localhost:3001/index.html"><i class="fa-solid fa-right-to-bracket me-1"></i> Login</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active" href="http://localhost:8087/index.html"><i class="fa-solid fa-house me-1"></i> Home</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="http://localhost:3000/index.html"><i class="fa-solid fa-box-open me-1"></i> Order / Cart</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="http://localhost:8086/payment.html"><i class="fa-solid fa-credit-card me-1"></i> Payment</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="http://localhost:3001/profile.html"><i class="fa-solid fa-user me-1"></i> Profile</a>
+    </li>
+</ul>
 
                 <div class="d-flex align-items-center gap-3">
-                    <a href="../order-service/cart.html" class="btn btn-outline-light btn-sm rounded-pill px-3">
-                        <i class="fa-solid fa-cart-shopping me-1"></i> My Cart
-                    </a>
+                   <a href="http://localhost:3000/index.html" class="btn btn-outline-light btn-sm rounded-pill px-3">
+    <i class="fa-solid fa-cart-shopping me-1"></i> My Cart
+</a>
 
                     <!-- Admin / User View Switcher -->
                     <div class="bg-dark bg-opacity-50 px-3 py-1 rounded-pill border border-secondary">
@@ -890,19 +893,43 @@ if (book.imageUrl && book.imageUrl.trim() !== '') {
             return str ? str.replace(/'/g, "\\'") : '';
         }
 
-        function addToCart(id, title, price) {
-            let cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
-            const existingItem = cart.find(item => item.id === id);
+        async function addToCart(id, title, price) {
+    const USER_ID = 101;
 
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ id, title, price, quantity: 1 });
-            }
+    const payload = {
+        userId: USER_ID,
+        bookId: id,
+        bookTitle: title,
+        price: parseFloat(price),
+        quantity: 1
+    };
 
-            localStorage.setItem('shoppingCart', JSON.stringify(cart));
+    try {
+        // Backend API එකට data යැවීම (Port 8083)
+        const response = await fetch('http://localhost:8083/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': 'YOUR_SECRET_API_KEY_HERE'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
             showAlert(`"${title}" added to shopping cart! 🛒`, 'success');
+            
+            // සාර්ථකව add වුණාට පස්සේ Shopping Cart (Port 3000) එකට Redirect වීම
+            setTimeout(() => {
+                window.location.href = 'http://localhost:3000/index.html'; 
+            }, 1000); 
+        } else {
+            showAlert('Failed to add item to cart backend!', 'error');
         }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        showAlert('Backend connection error!', 'error');
+    }
+}
 
         document.getElementById('addBookForm').addEventListener('submit', async function(e) {
             e.preventDefault();

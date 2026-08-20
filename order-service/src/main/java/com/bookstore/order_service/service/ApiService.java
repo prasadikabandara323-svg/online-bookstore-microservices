@@ -32,57 +32,7 @@ public class ApiService {
         return "Data processed successfully: " + inputData.toUpperCase();
     }
 
-    // --- CART OPERATIONS FOR MONGODB ---
-
-    public Object getCartByUserId(Long userId) {
-        List<CartItem> items = cartRepository.findByUserId(userId);
-        
-        double totalAmount = items.stream()
-                .mapToDouble(item -> (item.getPrice() != null ? item.getPrice() : 0.0) * (item.getQuantity() != null ? item.getQuantity() : 1))
-                .sum();
-
-        Map<String, Object> cartResponse = new HashMap<>();
-        cartResponse.put("userId", userId);
-        cartResponse.put("items", items);
-        cartResponse.put("totalAmount", totalAmount);
-
-        return cartResponse;
-    }
-
-    public Object addToCart(Map<String, Object> itemData) {
-        Long userId = Long.valueOf(itemData.get("userId").toString());
-        Long bookId = Long.valueOf(itemData.get("bookId").toString());
-        String bookTitle = itemData.containsKey("bookTitle") ? itemData.get("bookTitle").toString() : "Unknown Title";
-        Double price = Double.valueOf(itemData.get("price").toString());
-        Integer quantity = itemData.containsKey("quantity") ? Integer.valueOf(itemData.get("quantity").toString()) : 1;
-
-        Optional<CartItem> existingItemOpt = cartRepository.findByUserIdAndBookId(userId, bookId);
-
-        CartItem cartItem;
-        if (existingItemOpt.isPresent()) {
-            cartItem = existingItemOpt.get();
-            cartItem.setQuantity(cartItem.getQuantity() + quantity);
-        } else {
-            cartItem = new CartItem();
-            cartItem.setUserId(userId);
-            cartItem.setBookId(bookId);
-            cartItem.setBookTitle(bookTitle);
-            cartItem.setPrice(price);
-            cartItem.setQuantity(quantity);
-        }
-
-        log.info("Saving Cart Item to MongoDB for User ID: {}, Book ID: {}", userId, bookId);
-        cartRepository.save(cartItem);
-
-        return getCartByUserId(userId);
-    }
-
-    public void clearCartByUserId(Long userId) {
-        log.info("Clearing Cart for User ID: {}", userId);
-        cartRepository.deleteByUserId(userId);
-    }
-
-    // --- ORDER CRUD OPERATIONS FOR MONGODB ---
+    // --- ORDER CRUD OPERATIONS FOR MONGODB (unchanged) ---
 
     public Order createOrder(Order order) {
         if (order.getStatus() == null || order.getStatus().isEmpty()) {
@@ -122,5 +72,54 @@ public class ApiService {
         }
         log.warn("Failed to delete. Order ID {} not found", id);
         return false;
+    }
+
+    // --- CART OPERATIONS (real MongoDB persistence, bookId as String) ---
+
+    public Object getCartByUserId(Long userId) {
+        List<CartItem> items = cartRepository.findByUserId(userId);
+
+        double total = items.stream()
+                .mapToDouble(i -> (i.getPrice() != null ? i.getPrice() : 0) *
+                        (i.getQuantity() != null ? i.getQuantity() : 1))
+                .sum();
+
+        Map<String, Object> cart = new HashMap<>();
+        cart.put("items", items);
+        cart.put("totalAmount", total);
+        return cart;
+    }
+
+    public Object addToCart(Map<String, Object> itemData) {
+        Long userId = Long.valueOf(itemData.get("userId").toString());
+        String bookId = itemData.get("bookId").toString(); // 👈 Long.valueOf() ඉවත් කළා - book-catalog ID එක String
+        String bookTitle = itemData.get("bookTitle") != null ? itemData.get("bookTitle").toString() : null;
+        Double price = itemData.get("price") != null ? Double.valueOf(itemData.get("price").toString()) : 0.0;
+        Integer quantity = itemData.get("quantity") != null
+                ? Integer.valueOf(itemData.get("quantity").toString()) : 1;
+
+        List<CartItem> existingItems = cartRepository.findByUserId(userId);
+        Optional<CartItem> existing = existingItems.stream()
+                .filter(i -> bookId.equals(i.getBookId()))
+                .findFirst();
+
+        CartItem saved;
+        if (existing.isPresent()) {
+            CartItem item = existing.get();
+            item.setQuantity(item.getQuantity() + quantity);
+            saved = cartRepository.save(item);
+        } else {
+            CartItem newItem = new CartItem(null, userId, bookId, bookTitle, quantity, price);
+            saved = cartRepository.save(newItem);
+        }
+
+        log.info("Added/updated cart item for userId={}, bookId={}, price={}", userId, bookId, price);
+        return saved;
+    }
+
+    public void clearCartByUserId(Long userId) {
+        List<CartItem> items = cartRepository.findByUserId(userId);
+        cartRepository.deleteAll(items);
+        log.info("Cleared cart for userId={}", userId);
     }
 }

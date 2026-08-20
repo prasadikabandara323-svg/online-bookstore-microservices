@@ -22,7 +22,7 @@ public class DataSeeder {
                 User admin = new User();
                 admin.setFullName("prasadika");
                 admin.setEmail("prasadikabandara323@gmail.com");
-                admin.setPassword(passwordEncoder.encode("123456"));
+                admin.setPassword(passwordEncoder.encode("prasa@2000"));
                 admin.setRole(Role.ADMIN); // String වෙනුවට Role Enum එක භාවිතා කිරීම
                 admin.setEnabled(true);
                 admin.setCreatedAt(LocalDateTime.now());

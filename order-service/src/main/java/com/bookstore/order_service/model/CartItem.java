@@ -16,8 +16,8 @@ public class CartItem {
     private String id;
 
     private Long userId;
-    private Long bookId;
-    private String bookTitle; // 👈 මෙන්න මේ Field එක එකතු කරන්න
+    private String bookId; // 👈 book-catalog-service එකේ Book.id එක MongoDB String ID එකක් නිසා Long නෙවෙයි String වෙන්න ඕනේ
+    private String bookTitle;
     private Integer quantity;
     private Double price;
 }
