@@ -35,7 +35,9 @@ function renderCart(cart) {
 
     tableBody.innerHTML = '';
 
-    if (!cart.items || cart.items.length === 0) {
+    const items = cart.items || cart || [];
+
+    if (!Array.isArray(items) || items.length === 0) {
         emptyMsg.classList.remove('hidden');
         totalAmountElem.innerText = 'LKR 0.00';
         checkoutBtn.disabled = false;
@@ -45,17 +47,24 @@ function renderCart(cart) {
     emptyMsg.classList.add('hidden');
     checkoutBtn.disabled = false;
 
-    cart.items.forEach(item => {
+    let totalCalculated = 0;
+
+    items.forEach(item => {
+        const itemPrice = Number(item.price) || 0;
+        const itemQty = Number(item.quantity) || 1;
+        const subtotal = itemPrice * itemQty;
+        totalCalculated += subtotal;
+
         const row = document.createElement('tr');
         row.innerHTML = `
             <td><strong>${item.bookTitle || 'Book ID: ' + item.bookId}</strong></td>
-            <td>LKR ${item.price.toFixed(2)}</td>
+            <td>LKR ${itemPrice.toFixed(2)}</td>
             <td>
-                <input type="number" min="1" value="${item.quantity}" 
+                <input type="number" min="1" value="${itemQty}" 
                        class="qty-input" 
                        onchange="updateQuantity(${item.bookId}, this.value)">
             </td>
-            <td>LKR ${(item.price * item.quantity).toFixed(2)}</td>
+            <td>LKR ${subtotal.toFixed(2)}</td>
             <td>
                 <button class="btn-delete" onclick="removeItem(${item.bookId})">Remove</button>
             </td>
@@ -63,7 +72,8 @@ function renderCart(cart) {
         tableBody.appendChild(row);
     });
 
-    totalAmountElem.innerText = `LKR ${cart.totalAmount.toFixed(2)}`;
+    const finalTotal = cart.totalAmount !== undefined ? cart.totalAmount : totalCalculated;
+    totalAmountElem.innerText = `LKR ${Number(finalTotal).toFixed(2)}`;
 }
 
 async function updateQuantity(bookId, quantity) {
