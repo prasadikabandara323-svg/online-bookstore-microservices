@@ -27,9 +27,8 @@ spring:
               predicates:
                 - Path=/api/orders/**,/api/cart/**
               filters:
-                - StripPrefix=1
                 - AddRequestHeader=X-API-KEY, YOUR_SECRET_API_KEY_HERE
-            - id: payment-notification-service
+            - id: payment-service
               uri: http://${PAYMENT_SERVICE_HOST:localhost}:8084
               predicates:
                 - Path=/api/payments/**
